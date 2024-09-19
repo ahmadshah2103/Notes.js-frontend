@@ -1,9 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { signOut } from '../../store/authSlice';
 
 const Navbar = () => {
-  const { user, signOut } = useAuth();
+  const dispatch = useDispatch();
+  const { user } = useSelector(state => state.auth);
+
+  const handleSignOut = () => {
+    dispatch(signOut());
+  };
 
   return (
     <nav>
@@ -17,7 +23,7 @@ const Navbar = () => {
               <Link to="/profile">
                 Profile
               </Link>
-              <button onClick={signOut}>
+              <button onClick={handleSignOut}>
                 Logout
               </button>
             </>

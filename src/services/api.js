@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useSelector } from 'react-redux';
 
 const api = axios.create({
   baseURL: 'http://localhost:3000',
@@ -9,8 +10,9 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = JSON.parse(localStorage.getItem('token'));
-    if (token) {
+    const authState = localStorage.getItem('authState');
+    if (authState) {
+      const { token } = JSON.parse(authState);
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;

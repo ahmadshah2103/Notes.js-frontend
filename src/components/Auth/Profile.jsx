@@ -1,31 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { signOut } from '../../store/authSlice';
 
 export default function Profile() {
-    const { user, signOut } = useAuth();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        setLoading(!user);
-        if (!user) {
-            setError('User not found');
-        }
-    }, [user]);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const { user, error, status } = useSelector(state => state.auth);
 
     const handleSignOut = async () => {
         try {
-            setLoading(true);
-            await signOut();
+            dispatch(signOut());
         } catch (error) {
-            setError('Failed to sign out');
             console.error("Failed to sign out", error);
-        } finally {
-            setLoading(false);
         }
     };
 
-    if (loading) return <p>Loading profile...</p>;
+    if (!user) navigate('/auth');
+    if (status === 'loading') return <p>Loading profile...</p>;
     if (error) return <p>Error: {error}</p>;
 
     const { name, email, dob, gender } = user;
@@ -43,8 +34,8 @@ export default function Profile() {
                 <button onClick={() => console.log('Edit profile functionality to be implemented')}>
                     Edit Profile
                 </button>
-                <button onClick={handleSignOut} disabled={loading}>
-                    {loading ? 'Signing Out...' : 'Sign Out'}
+                <button onClick={handleSignOut}>
+                    Sign Out
                 </button>
             </div>
         </div>

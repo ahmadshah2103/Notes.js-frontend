@@ -1,22 +1,18 @@
 import { useState } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInUser } from '../../store/authSlice';
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const { signIn } = useAuth();
+    const dispatch = useDispatch();
+    const {error} = useSelector(state => state.auth);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        try {
-            await signIn({ email, password });
-            // Handle successful sign-in (e.g., redirect to dashboard)
-        } catch (error) {
-            setError('Failed to sign in. Please check your credentials.');
-            console.error('Sign in error:', error);
-        }
+        dispatch(signInUser({ email, password }));
+        setEmail('');
+        setPassword('');
     };
 
     return (

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useAuth } from "../../contexts/AuthContext";
+import { signUpUser } from "../../store/authSlice";
+import { useDispatch, useSelector } from "react-redux";
 import Joi from "joi";
 
 const signupSchema = Joi.object({
@@ -25,8 +25,9 @@ export default function SignUp() {
         dob: "",
         gender: "",
     });
-    const [error, setError] = useState(null);
-    const { signUp } = useAuth();
+
+    const dispatch = useDispatch();
+    const { error, status } = useSelector(state => state.auth);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -34,7 +35,6 @@ export default function SignUp() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(null);
 
         if (formData.password !== formData.confirmPassword) {
             setError("Passwords do not match");
@@ -56,7 +56,7 @@ export default function SignUp() {
         const { confirmPassword, ...userData } = formData;
 
         try {
-            await signUp(userData);
+            await dispatch(signUpUser(userData)).unwrap();
             console.log("Sign up successful");
         } catch (err) {
             setError("Failed to sign up. Please try again.");
@@ -138,7 +138,9 @@ export default function SignUp() {
                         <option value="not_specified">Prefer not to say</option>
                     </select>
                 </div>
-                <button type="submit">Sign Up</button>
+                <button type="submit" disabled={status === 'loading'}>
+                    {status === 'loading' ? 'Signing Up...' : 'Sign Up'}
+                </button>
             </form>
         </div>
     );

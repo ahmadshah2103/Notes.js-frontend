@@ -1,39 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import NoteForm from "../components/Notes/NoteForm";
-import { createNote, updateNote, getNoteById } from "../services/noteService";
-import { useAuth } from "../contexts/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
+import { editNote, addNote, fetchNoteById } from "../store/notesSlice";
 
-const CreateOrUpdateNotePage = ({ notes, setNotes }) => {
+const CreateOrUpdateNotePage = () => {
     const { noteId } = useParams();
+    const { user } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [note, setNote] = useState({ title: "", content: "" });
-    const [isLoading, setIsLoading] = useState(false);
-    const { user } = useAuth();
-
-    useEffect(() => {
-        if (noteId) {
-            setIsLoading(true);
-            getNoteById(user.id, noteId)
-                .then((fetchedNote) => {
-                    setNote(fetchedNote);
-                    setIsLoading(false);
-                })
-                .catch((error) => {
-                    console.error("Error fetching note:", error);
-                    setIsLoading(false);
-                });
-        }
-    }, [noteId, user.id]);
 
     const handleSubmit = async (formData) => {
         try {
             if (noteId) {
-                const updatedNote = await updateNote(user.id, noteId, formData);
-                setNotes(notes.map((n) => (n.id === updatedNote.id ? updatedNote : n)));
+                dispatch(editNote({ userId: user.id, noteId, note: formData }));
             } else {
-                const newNote = await createNote(user.id, formData);
-                setNotes([...notes, newNote]);
+                dispatch(addNote({ userId: user.id, note: formData }));
             }
             navigate("/dashboard");
         } catch (error) {
@@ -41,14 +23,18 @@ const CreateOrUpdateNotePage = ({ notes, setNotes }) => {
         }
     };
 
-    if (isLoading) {
-        return <div>Loading...</div>;
-    }
-
     return (
         <div>
             <h1>{noteId ? "Update Note" : "Create New Note"}</h1>
-            <NoteForm initialData={note} onSubmit={handleSubmit} operationName={noteId ? "Update Note" : "Create Note"} />
+            <NoteForm
+                initialData={
+                    noteId
+                        ? dispatch(fetchNoteById({ userId: user.id, noteId }))
+                        : {}
+                }
+                onSubmit={handleSubmit}
+                operationName={noteId ? "Update Note" : "Create Note"}
+            />
         </div>
     );
 };

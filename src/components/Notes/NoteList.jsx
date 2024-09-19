@@ -1,22 +1,27 @@
 import React from "react";
 import NoteCard from "./NoteCard";
-import { deleteNote } from "../../services/noteService";
-import { useAuth } from "../../contexts/AuthContext";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { removeNote } from "../../store/notesSlice";
+import { useEffect } from "react";
 
-const NoteList = ({ notes, setNotes }) => {
-    const { user } = useAuth();
+const NoteList = () => {
+    const { user } = useSelector(state => state.auth);
+    const notes = useSelector(state => state.notes);
+    const dispatch = useDispatch();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        console.log("Notes updated!");
+    }, [notes]);
+
     const sortedNotes = [...notes].sort(
         (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
     );
 
     const handleDelete = async (noteId) => {
         try {
-            const message = await deleteNote(user.id, noteId);
-            console.log(message);
-            
-            setNotes(notes.filter(note => note.id !== noteId));
+            dispatch(removeNote({ userId: user.id, noteId }));
 
             const alertElement = document.createElement("div");
             alertElement.textContent = "Note has been deleted";

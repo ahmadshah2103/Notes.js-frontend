@@ -1,26 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "./contexts/AuthContext";
 import AuthPage from "./containers/AuthPage";
 import ProfilePage from "./containers/ProfilePage";
 import DashboardPage from "./containers/DashboardPage";
 import CreateOrUpdateNotePage from "./containers/CreateOrUpdateNotePage";
 import Navbar from "./components/Common/Navbar";
-import { getNotes } from "./services/noteService";
+import { useSelector, useDispatch } from "react-redux";
 
 export default function App() {
-    const { user } = useAuth();
-    const [notes, setNotes] = useState([]);
+    const authState = useSelector((state) => state.auth);
+    const user = authState.user;
 
     useEffect(() => {
-        if (user) {
-            getNotes(user.id)
-                .then((fetchedNotes) => setNotes(fetchedNotes))
-                .catch((error) =>
-                    console.error("Error fetching notes:", error)
-                );
-        }
-    }, [user]);
+        console.log(authState);
+    }, [authState]);
 
     return (
         <BrowserRouter>
@@ -36,14 +29,7 @@ export default function App() {
                     <Route
                         path="/dashboard"
                         element={
-                            user ? (
-                                <DashboardPage
-                                    notes={notes}
-                                    setNotes={setNotes}
-                                />
-                            ) : (
-                                <Navigate to="/auth" />
-                            )
+                            user ? <DashboardPage /> : <Navigate to="/auth" />
                         }
                     />
                     <Route
@@ -56,10 +42,7 @@ export default function App() {
                         path="/create-note"
                         element={
                             user ? (
-                                <CreateOrUpdateNotePage
-                                    notes={notes}
-                                    setNotes={setNotes}
-                                />
+                                <CreateOrUpdateNotePage />
                             ) : (
                                 <Navigate to="/auth" />
                             )
@@ -69,10 +52,7 @@ export default function App() {
                         path="/update-note/:noteId"
                         element={
                             user ? (
-                                <CreateOrUpdateNotePage
-                                    notes={notes}
-                                    setNotes={setNotes}
-                                />
+                                <CreateOrUpdateNotePage />
                             ) : (
                                 <Navigate to="/auth" />
                             )
